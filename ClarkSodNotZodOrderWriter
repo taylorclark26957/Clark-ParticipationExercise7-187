@@ -1,0 +1,111 @@
+/* AUTHOR: Taylor Clark
+ * COURSE: CPT 187
+ * PURPOSE: The purpose of the OrderWriter class is to take
+ * user input from creating an order and implement it into
+ * the MASTER FILE.
+ * CREATEDATE: 17 February 2020
+ * UPDATED: 23 February 2020
+ */
+
+package edu.cpt187.clark.participation6;
+
+//IMPORT THE PrintWriter CLASS
+import java.io.PrintWriter;
+
+//IMPORT THE FileWriter CLASS
+import java.io.FileWriter;
+
+//IMPORT THE IOException CLASS
+import java.io.IOException;
+
+//START OrderWriter CLASS
+public class OrderWriter
+{
+	//DECLARE/INITIALIZE OrderWriter CLASS CONSTANTS
+	private final int NOT_FOUND = -1;
+	private final int RESET_VALUE = 0;
+	
+	//DECLARE/INITIALIZE OrderWriter CLASS VARIABLES
+	private String masterFileName = "";
+	private boolean fileFoundFlag = false;
+	private int recordCount = 0;
+	
+	//CREATE OrderWriter CLASS CONSTRUCTOR
+	public OrderWriter(String borrowedFileName)
+	{
+		masterFileName = borrowedFileName;
+	} //END OrderWriter CLASS CONSTRUCTOR
+	
+	//SETTER
+	
+	//START setWriteOrder() SETTER
+	//WRITES USER INPUT TO THE .dat MASTER FILE
+	public void setWriteOrder(int borrowedItemID, String borrowedItemName,
+			double borrowedItemPrice, int borrowedQuantity,
+			double borrowedOrderCost)
+	{
+		//SET recordCount TO THE RESET_VALUE
+		//WILL RESET THE recordCount EACH TIME THE METHOD
+		//IS INVOKED
+		recordCount = RESET_VALUE;
+		
+		//CREATE A TRY/CATCH() STRUCTURE
+		
+		//START TRY()
+		//TRY WRITES ONE SINGLE RECORD
+		try
+		{
+			//CREATE INSTANTIATION STATEMENT FOR FileWriter
+			PrintWriter filePW = new PrintWriter(new FileWriter(masterFileName, true));
+			
+			//WRITE ONE RECORD TO FILE
+			filePW.printf("%d\t%s\t%.2f\t%d\t%.2f\n", borrowedItemID, borrowedItemName, borrowedItemPrice,
+					borrowedQuantity, borrowedOrderCost);
+			
+			//SET fileFoundFlag TO true
+			//DECLARES THAT THE FILE WAS FOUND
+			fileFoundFlag = true;
+			
+			//INCREMENT recordCount
+			//DECLARES THAT A RECORD HAS BEEN FOUND
+			//WILL ADD ONE EVERY TIME A RECORD IS FOUND
+			recordCount++;
+			
+			//CLOSE PrintWriter
+			filePW.close();
+		} //END TRY()
+		//START CATCH()
+		//CATCH() CATCHES ANY ERRORS MADE IN TRY()
+		catch (IOException ex)
+		{
+			//SET "NOT FOUND" TO recordCount
+			recordCount = NOT_FOUND;
+			
+			//SET fileFoundFlag TO false
+			fileFoundFlag = false;
+		} //END CATCH()
+	} //END setWriteOrder() SETTER
+	
+	//GETTERS
+	
+	//START getFileName() GETTER
+	//RETURNS THE BORROWED FILE NAME GIVEN BY THE USER
+	public String getFileName()
+	{
+		return masterFileName;
+	} //END getFileName() GETTER
+	
+	//START getFileFoundFlag() GETTER
+	//RETURNS THE boolean VARIABLE "fileFoundFlag"
+	public boolean getFileFoundFlag()
+	{
+		return fileFoundFlag;
+	} //END getFileFoundFlag() GETTER
+	
+	//START getRecordCount() GETTER
+	//RETURNS THE int VALUE "recordCount"
+	public int getRecordCount()
+	{
+		return recordCount;
+	}
+} //END OrderWriter CLASS
