@@ -1,0 +1,470 @@
+/* AUTHOR: Taylor Clark
+ * COURSE: CPT 187
+ * PURPOSE: The purpose of the Inventory class is to set
+ * and load records to files opened by the user and to
+ * search for the itemID that the user entered.
+ * CREATEDATE: 17 February 2020
+ * UPDATED: 23 February 2020
+ */
+
+package edu.cpt187.clark.participation6;
+
+//IMPORT THE FileInputStream CLASS
+import java.io.FileInputStream;
+
+//IMPORT THE IOException CLASS
+import java.io.IOException;
+
+//IMPORT THE Scanner CLASS
+import java.util.Scanner;
+
+//IMPORT THE Random CLASS
+import java.util.Random;
+
+//START Inventory CLASS
+public class Inventory
+{
+	//DECLARE/INITIALIZE Inventory CLASS CONSTANTS
+	
+	//private final Strings[]
+	private final String[] DISCOUNT_NAMES = {"Member", "Senior", "No Discount"};
+	private final String[] PRIZE_NAMES = {"ps5", "$500 GiftCard", "Free Membership"};
+	
+	//private final double[]
+	private final double[] DISCOUNT_RATES = {0.25, 0.15, 0.0};
+	
+	//private final ints
+	private final int MAX_ITEMS = 5;
+	private final int NOT_FOUND = -1;
+	private final int RESET_VALUE = 0;
+	
+	//DECLARE/INITIALIZE Inventory CLASS VARIABLES
+	
+	//private String[]
+	private String[] itemNames = new String[MAX_ITEMS];
+	
+	//private doubles[]
+	private double[] itemPrices = new double[MAX_ITEMS];
+	private double[] orderTotal = new double[MAX_ITEMS];
+	
+	//private ints[]
+	private int[] itemIDs = new int[MAX_ITEMS];
+	private int[] orderQuantity = new int[MAX_ITEMS];
+	private int[] inStockCounts = new int[MAX_ITEMS];
+	
+	//private ints
+	private int itemSearchIndex = 0;
+	private int recordCount = 0;
+	
+	//private Random
+	private Random prizeGenerator = new Random();
+	
+	//CREATE Inventory CLASS CONSTRUCTOR
+	public Inventory()
+	{
+	} //END Inventory CLASS CONSTRUCTOR
+	
+	//SETTERS
+	
+	//START setReduceStock() SETTER
+	//REDUCES THE STOCK EACH AND EVERY TIME AN ITEM IS
+	//PURCHASED BY THE USER
+	public void setReduceStock(int borrowedHowMany)
+	{
+		//SUBTRACTS THE NUMBER OF ITEM CHOSEN BY THE USER
+		//BEFORE IT WAS PURCHASED AND SUBTRACTS THE AMOUNT
+		//OF THIS ITEM PURCHASED BY THE USER
+		inStockCounts[itemSearchIndex] = (inStockCounts[itemSearchIndex] - borrowedHowMany);
+	} //END setReduceStock() SETTER
+	
+	//START setLoadItems() SETTER
+	//SETS/LOADS itemIDs, itemNames, itemPrices, AND
+	//inStockCounts FROM THE FILE CHOSEN BY THE USER
+	public void setLoadItems(String borrowedFileName)
+	{
+		//SET recordCount TO RESET_VALUE
+		//WILL RESET THE recordCount EACH TIME THE
+		//setLoadItems() SETTER IS INVOKED
+		recordCount = RESET_VALUE;
+		
+		//START TRY/CATCH() STRUCTURE
+		
+		//START TRY()
+		//TRY() SETS/LOADS THE FILE'S FIELDS AND RECORDS
+		try
+		{
+			//CREATE INSTANTIATION STATEMENT FOR
+			//FileInputStream CLASS and Scanner CLASS
+			Scanner infile = new Scanner(new FileInputStream(borrowedFileName));
+			
+			//CREATE A RUN-WHILE LOOP TO SET/LOAD ALL OF
+			//THE RECORDS WITHIN THE FILE CHOSEN BY THE
+			//USER
+			//CONDITION MUST BE THAT THE FILE NAME WAS
+			//FOUND WHEN ENTERED AND THE recordCount MUST
+			//BE LESS THAN THE MAXIMUM NUMBER OF ITEMS
+			//ALLOWED BY THE FILE
+			//INCREMENTS recordCount
+			while (infile.hasNext() == true && recordCount < MAX_ITEMS)
+			{
+				//READS A COMPLETE RECORD AND ALL THE
+				//RECORD'S FILES
+				itemIDs[recordCount] = infile.nextInt();
+				itemNames[recordCount] = infile.next();
+				itemPrices[recordCount] = infile.nextDouble();
+				inStockCounts[recordCount] = infile.nextInt();
+				
+				//INCREMENT recordCount
+				//DECLARES THAT A RECORD HAS BEEN FOUND
+				//WILL ADD ONE EVERY TIME A RECORD IS FOUND
+				recordCount++;
+			} //END RUN-WHILE LOOP
+			
+			//CLOSE FILE/SCANNER
+			infile.close();
+			
+			//INVOKE THE setBubbleSort() SETTER
+			setBubbleSort();
+		} //END TRY()
+		//START CATCH()
+		//CATCH() CATCHES ANY ERRORS MADE IN TRY()
+		catch (IOException ex)
+		{
+			//SET recordCount TO NOT_FOUND
+			recordCount = NOT_FOUND;
+		}
+	} //END setLoadItems() SETTER
+	
+	//START setLoadItems() SETTER
+	//SETS/LOADS itemIDs, itemNames, itemPrices,
+	//orderQuantity, orderTotal, AND inStockCounts FROM
+	//THE FILE CHOSEN BY THE USER
+	public void setLoadItems(String borrowedFileName, int borrowedSize)
+	{
+		//SET recordCount TO RESET_VALUE
+		//WILL RESET THE recordCount EACH TIME THE
+		//setLoadItems() SETTER IS INVOKED
+		recordCount = RESET_VALUE;
+		
+		//DECLARE THE ARRAY orderQuantity
+		orderQuantity = new int[borrowedSize];
+		
+		//DECLARE THE ARRAY orderTotal
+		orderTotal = new double[borrowedSize];
+		
+		//START TRY/CATCH() STRUCTURE
+		
+		//START TRY()
+		//TRY() SETS/LOADS THE FILE'S FIELDS AND RECORDS
+		try
+		{
+			//CREATE INSTANTIATION STATEMENT FOR
+			//FileInputStream CLASS AND Scanner CLASS
+			Scanner infile = new Scanner(new FileInputStream(borrowedFileName));
+			
+			//CREATE A RUN-WHILE LOOP TO SET/LOAD ALL OF
+			//THE RECORDS WITHIN THE FILE CHOSEN BY THE
+			//USER
+			//CONDITION MUST BE THAT THE FILE NAME WAS
+			//FOUND WHEN ENTERED AND THE recordCount MUST
+			//BE LESS THAN THE MAXIMUM NUMBER OF ITEMS
+			//ALLOWED BY THE FILE
+			//INCREMENTS recordCount
+			while (infile.hasNext() == true && recordCount < borrowedSize)
+			{
+				//READS A COMPLETE RECORD AND ALL THE
+				//RECORD'S FILES
+				itemIDs[recordCount] = infile.nextInt();
+				itemNames[recordCount] = infile.next();
+				itemPrices[recordCount] = infile.nextDouble();
+				orderQuantity[recordCount] = infile.nextInt();
+				orderTotal[recordCount] = infile.nextDouble();
+				
+				//INCREMENT recordCount
+				//DECLARES THAT A RECORD HAS BEEN FOUND
+				//WILL ADD ONE EVERY TIME A RECORD IS FOUND
+				recordCount++;
+			} //END RUN-WHILE LOOP
+			
+			//CLOSE FILE/SCANNER
+			infile.close();
+			
+			//INVOKE THE setBubbleSort() SETTER
+			setBubbleSort();
+		} //END TRY()
+		//START CATCH()
+		//CATCH() CATCHES ANY ERRORS MADE IN TRY()
+		catch (IOException ex)
+		{
+			//SET recordCount TO NOT_FOUND
+			recordCount = NOT_FOUND;
+		} //END CATCH()
+	} //END setLoadItems() SETTER
+	
+	//START setSearchIndex() SETTER
+	//SETS THE SEARCH INDEX BASED ON THE ID THAT THE USER
+	//ENTERED IN validateSearchID() VR METHOD
+	//SETS THE TARGETED ID
+	public void setSearchIndex(int borrowedID)
+	{
+		itemSearchIndex = getSearchResults(borrowedID);
+	} //END setSearchIndex() SETTER
+	
+	//START setBubbleSort() SETTER
+	//SORTS THE FILE'S RECORDS FROM LEAST TO GREATEST
+	public void setBubbleSort()
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLES
+		int last = 0;
+		int index = 0;
+		boolean swap;
+		
+		//SET last EQUAL TO recordCount MINUS ONE
+		//SETS THE LAST ELEMENT OF THE ARRAY/FILE
+		last = recordCount - 1;
+		
+		//USE A RUN-WHILE LOOP TO DETERMINE WHETHER last IS
+		//GREATER THAN THE RESET_VALUE
+		while (last > RESET_VALUE)
+		{
+			//SET index TO RESET_VALUE
+			index = RESET_VALUE;
+			
+			//SET swap TO false
+			swap = false;
+			
+			//USE A RUN-WHILE LOOP TO DETERMINE WHETHER
+			//index IS LESS THAN last
+			while (index < last)
+			{
+				//USE AN IF STATEMENT TO DETERMINE WHETHER
+				//THE INDEX OF itemIDs IS GREATER THAN THE
+				//INDEX PLUS ONE OF itemIDs
+				if(itemIDs[index] > itemIDs[index + 1])
+				{
+					//INVOKE setSwapArrayElements() SETTER
+					//TO SWAP THE ARRAY ELEMENTS IF THE
+					//INDEX IS LESS THAN THE INDEX PLUS ONE
+					//BUT IS DISPLAYED AFTER INDEX PLUS ONE
+					setSwapArrayElements(index);
+					
+					//SET swap TO true
+					//DETERMINES THAT A SWAP IS NEEDED TO
+					//ORGANIZE FILE RECORDS/ARRAY ELEMENTS
+					swap = true;
+				} //END IF STATEMENT
+				
+				//INCREMENT index
+				index++;
+			} //END while (index < last) LOOP
+			
+			//USE AN IF/ELSE STATEMENT TO DETERMINE IF swap
+			//IS false
+			if(swap == false)
+			{
+				//SET last to RESET_VALUE
+				last = RESET_VALUE;
+			} //END IF
+			else
+			{
+				//SET last TO last MINUS ONE
+				last = last - 1;
+			} //END ELSE
+		} //END while (last > RESET_VALUE) LOOP
+	} //END setBubbleSort() SETTER
+	
+	//START setSwapArrayElements() SETTER
+	//SWAPS ARRAY ELEMENTS WHEN THEY NEED TO BE SWAPPED
+	//DETERMINED BY THE setBubbleSort() SETTER
+	public void setSwapArrayElements(int borrowedIndex)
+	{
+		//DECLARE/INITIALIZE LOCAL "HOLDERS"
+		int localIntHolder = 0;
+		String localStringHolder = "";
+		double localDoubleHolder = 0.0;
+		
+		//SWAP itemIDs' ELEMENTS
+		localIntHolder = itemIDs[borrowedIndex + 1];
+		itemIDs[borrowedIndex + 1] = itemIDs[borrowedIndex];
+		itemIDs[borrowedIndex] = localIntHolder;
+		
+		//SWAP itemNames' ELEMENTS
+		localStringHolder = itemNames[borrowedIndex + 1];
+		itemNames[borrowedIndex + 1] = itemNames[borrowedIndex];
+		itemNames[borrowedIndex] = localStringHolder;
+		
+		//SWAP itemPrices' ELEMENTS
+		localDoubleHolder = itemPrices[borrowedIndex + 1];
+		itemPrices[borrowedIndex + 1] = itemPrices[borrowedIndex];
+		itemPrices[borrowedIndex] = localDoubleHolder;
+	} //END setSwapArrayElements() SETTER
+	
+	//GETTERS
+	
+	//START getInStockCounts() GETTER
+	//RETURNS inStockCounts
+	public int[] getInStockCounts()
+	{
+		return inStockCounts;
+	} //END getInStockCounts() GETTER
+	
+	//START getItemIDs() GETTER
+	//RETURNS itemIDs
+	public int[] getItemIDs()
+	{
+		return itemIDs;
+	} //END getItemIDs() GETTER
+	
+	//START getItemNames() GETTER
+	//RETURNS itemNames
+	public String[] getItemNames()
+	{
+		return itemNames;
+	} //END getItemNames() GETTER
+	
+	//START getItemPrices() GETTER
+	//RETURNS itemPrices
+	public double[] getItemPrices()
+	{
+		return itemPrices;
+	} //END getItemPrices() GETTER
+	
+	//START getDiscountNames() GETTER
+	//RETURNS DISCOUNT_NAMES
+	public String[] getDiscountNames()
+	{
+		return DISCOUNT_NAMES;
+	} //END getDiscountNames() GETTER
+	
+	//START getDiscountRates() GETTER
+	//RETURNS DISCOUNT_RATES
+	public double[] getDiscountRates()
+	{
+		return DISCOUNT_RATES;
+	} //END getDiscountRates() GETTER
+	
+	//START getOrderQuantities() GETTER
+	//RETURNS orderQuantity
+	public int[] getOrderQuantities()
+	{
+		return orderQuantity;
+	} //END getOrderQuantities() GETTER
+	
+	//START getOrderTotals() GETTER
+	//RETURNS orderTotal
+	public double[] getOrderTotals()
+	{
+		return orderTotal;
+	} //END getOrderTotals() GETTER
+	
+	//START getPrizeNames() GETTER
+	//RETURNS PRIZE_NAMES
+	public String[] getPrizeNames()
+	{
+		return PRIZE_NAMES;
+	} //END getPrizeNames() GETTER
+	
+	//START getRandomNumber() GETTER
+	//RETURNS A RANDOM NUMBER GENERATED BY THE
+	//prizeGenerator AND SEEDED TO PRIZE_NAMES.length
+	public int getRandomNumber()
+	{
+		return prizeGenerator.nextInt(PRIZE_NAMES.length);
+	} //END getRandomNumber() GETTER
+	
+	//START getMaxRecords() GETTER
+	//RETURNS MAX_ITEMS
+	public int getMaxRecords()
+	{
+		return MAX_ITEMS;
+	} //END getMaxRecords() GETTER
+	
+	//START getSearchIndex() GETTER
+	//RETURNS itemSearchIndex
+	public int getSearchIndex()
+	{
+		return itemSearchIndex;
+	} //END getSearchIndex() GETTER
+	
+	//START getRecordCount() GETTER
+	//RETURNS recordCount FOR CURRENT FILE
+	public int getRecordCount()
+	{
+		return recordCount;
+	} //END getRecordCount() GETTER
+	
+	//START getSearchResults() GETTER
+	//SETS-UP A BINARY SEARCH TO SEARCH FOR THE TARGETED ID
+	//ENTERED BY THE USER
+	//USES MIDDLE ELEMENT TO SEARCH FOR TARGETED ID AND TO
+	//DETERMINE IF THE ID ENTERED IS VALID AND BELONGS TO
+	//THE FILE OPENED BY THE USER
+	public int getSearchResults(int borrowedBorrowedID)
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLES
+		int first = 0;
+		int last = 0;
+		int mid = 0;
+		boolean found;
+		
+		//SET last TO recordCount MINUS ONE
+		last = recordCount - 1;
+		
+		//SET found TO false
+		found = false;
+		
+		//USE A RUN-WHILE LOOP TO DETERMINE IF first IS
+		//LESS THAN OR EQUAL TO last AND IF found IS EQUAL
+		//TO false
+		while (first <= last && found == false)
+		{
+			//SET mid TO first PLUS last DIVIDED BY TWO
+			mid = (first + last) / 2;
+			
+			//USE AN IF/ELSE STATEMENT TO DETERMINE IF THE
+			//MIDDLE ELEMENT OF THE ARRAY IS THE TARGETED
+			//ID
+			if(itemIDs[mid] == borrowedBorrowedID)
+			{
+				//IF MIDDLE ELEMENT IS TARGETED ID, SET
+				//found TO true
+				//DECLARES THE ID TO BE FOUND
+				found = true;
+			} //END IF
+			else
+			{
+				//IF MIDDLE ELEMENT IS 'NOT' TARGETED ID,
+				//CREATE AN IF/ELSE STATEMENT THAT
+				//DETERMINES WHETHER THE TARGETED ID IS
+				//GREATER THAN THE MIDDLE ELEMENT
+				if(itemIDs[mid] < borrowedBorrowedID)
+				{
+					//IF TARGETED ID IS GREATER THAN MIDDLE
+					//ELEMENT, ADD ONE TO mid AND SET THIS
+					//VALUE EQUAL TO first
+					first = mid + 1;
+				} //END IF
+				else
+				{
+					//IF TARGETED ID IS LESS THAN MIDDLE
+					//ELEMENT, SUBTRACT ONE TO mid AND SET
+					//THIS VALUE EQUAL TO last
+					last = mid - 1;
+				} //END ELSE
+			} //END ELSE
+		} //END while (first <= last && found == false) LOOP
+		
+		//CREATE AN IF STATMENT FOR IF found IS EQUAL TO
+		//false
+		if(found == false)
+		{
+			//IF found IS EQUAL TO false, SET mid TO
+			//NOT_FOUND
+			//DECLARES THAT THE TARGETED ID WAS NOT FOUND
+			mid = NOT_FOUND;
+		} //END IF
+		
+		//RETURN mid
+		return mid;
+	} //END getSearchResults() GETTER
+} //END OF Inventory CLASS
