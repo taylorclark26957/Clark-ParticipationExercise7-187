@@ -1,0 +1,606 @@
+/* AUTHOR: Taylor Clark
+ * COURSE: CPT 187
+ * PURPOSE: The purpose of this program is to allow users to
+ * create an order based on the sod they wish to purchase, how
+ * much of that sod they wish to purchase, and the discount
+ * applies to them. Every order taken will then be written to
+ * the MasterOrderFile.dat This file will write every record
+ * and every field that belongs to the user's item selection
+ * and Search ID.
+ * CREATEDATE: 17 February 2020
+ * UPDATED: 23 February 2020
+ */
+
+package edu.cpt187.clark.participation6;
+
+import java.util.Scanner;
+
+public class MainClass
+{
+	//DECLARE/INITIALIZE MainClass CLASS CONSTANTS
+	public static final String[] MENU_OPTIONS = {"Load Inventory",
+			"Create order", "Quit"};
+	
+	public static final String MASTER_FILE_NAME = "MasterOrderFile.dat";
+	
+	//START main(String[] args) VOID METHOD
+	public static void main(String[] args)
+	{
+		//DECLARE/INITIALIZE SCANNER
+		Scanner input = new Scanner(System.in);
+		
+		//DECLARE/INITIALIZE LOCAL VARIABLES
+		String userName = "";
+		char menuSelection = ' ';
+		
+		//CREATE INSTANTIATION STATEMENT FOR Inventory
+		//CLASS
+		Inventory currentInventory = new Inventory();
+		
+		//CREATE INSTANTIATION STATEMENT FOR SodOrder CLASS
+		SodOrder mySodOrder = new SodOrder();
+		
+		//CREATE INSTANTIATION STATEMENT FOR OrderWriter
+		//CLASS
+		OrderWriter sodOrders = new OrderWriter(MASTER_FILE_NAME);
+		
+		//CALL displayWelcomeBanner() VOID METHOD TO
+		//DISPLAY THE WELCOME BANNER TO THE USER
+		displayWelcomeBanner();
+		
+		//SET THE LOCAL VARIABLE userName EQUAL TO THE
+		//INPUT GIVEN IN THE VR METHOD getUserName()
+		//PROMPTS THE USER TO ENTER THEIR FIRST NAME
+		//PRIME READ FOR userName
+		userName = getUserName(input);
+		
+		//SET THE LOCAL VARIABLE menuSelection EQUAL TO
+		//THE INPUT GIVEN IN THE VR METHOD
+		//validateMainMenuSelection()
+		//DISPLAYS THE MAIN MENU TO THE USER AND PROMPTS
+		//THE USER TO ENTER THEIR MAIN MENU SELECTION
+		//PRIME READ FOR menuSelection
+		menuSelection = validateMainMenuSelection(input);
+		
+		//USE A RUN-WHILE LOOP TO ALLOW USERS THAT DID NOT
+		//CHOSE 'QUIT' FROM THE MAIN MENU TO CONTINUE ON
+		//WITH THE PROGRAM
+		while (menuSelection != 'Q')
+		{
+			//USE AN IF/ELSE STATEMENT FOR IF THE USER
+			//CHOSE 'A' FROM THE MAIN MENU
+			if(menuSelection == 'A')
+			{
+				//COLLECT THE FILE NAME GIVEN BY THE USER
+				currentInventory.setLoadItems(getFileName(input));
+				
+				//USE AN IF/ELSE STATEMENT TO DETERMINE IF
+				//THE FILE NAME ENTERED BY THE USER IS
+				//VALID
+				if(currentInventory.getRecordCount() <= 0)
+				{
+					//CALL displayNotOpen() VOID METHOD TO
+					//DISPLAY TO THE USER THAT THE FILE
+					//THEY ENTERED WAS NOT FOUND
+					displayNotOpen();
+				} //END if(currentInventory.getRecordCount() <= 0)
+				else
+				{
+					//SEEDS THE VARIABLE itemCounts TO
+					//MAX_RECORDS
+					mySodOrder.setItemCountArray(currentInventory.getMaxRecords());
+				} //END (ELSE) if(currentInventory.getRecordCount() <= 0)
+			} //END if(menuSelection == 'A')
+			else
+			{
+				//SEARCH FOR THE TARGETED ID THAT THE USER
+				//ENTERED IN THE VR METHOD
+				//validateSearchValue();
+				currentInventory.setSearchIndex(validateSearchValue(input));
+				
+				//USE AN IF/ELSE STATEMENT TO DETERMINE IF
+				//THE SEARCH ID THE USER ENTERED IS VALID
+				if(currentInventory.getSearchIndex() < 0)
+				{
+					//CALL displayNotFound() VOID METHOD TO
+					//DISPLAY TO THE USER THAT THE SEARCH
+					//ID THEY ENTERED WAS INVALID
+					displayNotFound();
+				} //END if(currentInventory.getSearchIndex() < 0)
+				else
+				{
+					//IF THE USER'S SEARCH ID WAS FOUND
+					
+					//SET THE USER'S ITEM SELECTION
+					mySodOrder.setItemSelection(currentInventory.getSearchIndex());
+					
+					//SET THE USER'S SEARCH ID (ITEM ID)
+					mySodOrder.setItemID(currentInventory.getItemIDs());
+					
+					//SET THE NAME OF THE ITEM CHOSEN BY
+					//THE USER
+					mySodOrder.setItemName(currentInventory.getItemNames());
+					
+					//SET THE PRICE OF THE ITEM CHOSEN BY
+					//THE USER
+					mySodOrder.setItemPrice(currentInventory.getItemPrices());
+					
+					//SET THE QUANTITY OF ITEMS CHOSEN BY
+					//THE USER
+					mySodOrder.setHowMany(validateHowMany(input));
+					
+					//USE AN IF/ELSE STATEMENT TO DETERMINE
+					//IF THE QUANTITY OF ITEMS DESIRED BY
+					//THE USER IS IN STOCK
+					if(mySodOrder.getInStockCount(currentInventory.getInStockCounts())
+							< mySodOrder.getHowMany())
+					{
+						//CALL displayOutOfStock() VOID
+						//METHOD IF THE QUANTITY OF ITEMS
+						//ENTERED BY THE USER EXCEEDS THE
+						//ITEMS IN STOCK
+						displayOutOfStock();
+					} //END if(inStockCounts < howMany)
+					else
+					{
+						//IF THE USER'S DESIRED QUANTITY OF
+						//ITEMS DOES 'NOT' EXCEED THE ITEMS
+						//IN STOCK
+						
+						//SET THE USER'S DISCOUNT MENU
+						//SELECTION, discountName,
+						//discountRate, and discountCounts
+						mySodOrder.setDiscountType(validateDiscountMenuSelection(input,
+								currentInventory.getDiscountNames(),
+								currentInventory.getDiscountRates()));
+								
+						//SET THE DISCOUNT NAME BASED ON
+						//THE USER'S DISCOUNT MENU
+						//SELECTION
+						mySodOrder.setDiscountName(currentInventory.getDiscountNames());
+						
+						//SET THE DISCOUNT RATE BASED ON
+						//THE USER'S DISCOUNT MENU
+						//SELECTION
+						mySodOrder.setDiscountRate(currentInventory.getDiscountRates());
+						
+						//DECREASE THE STOCK AFTER THE USER
+						//MAKES A PURCHASE
+						mySodOrder.setDecreaseInStock(currentInventory);
+						
+						//SET THE PRIZE NAME BASED ON THE
+						//RANDOM NUMBER GENERATED BY THE
+						//prizeGenerator
+						mySodOrder.setPrizeName(currentInventory.getPrizeNames(),
+								currentInventory.getRandomNumber());
+						
+						//WRITE EACH RECORD TO THE
+						//MasterOrderFile.dat
+						sodOrders.setWriteOrder(mySodOrder.getItemID(),
+								mySodOrder.getItemName(),
+								mySodOrder.getItemPrice(),
+								mySodOrder.getHowMany(),
+								mySodOrder.getTotalCost());
+						
+						//USE AN IF/ELSE STATEMENT TO
+						//DETERMINE IF THE USER USED A
+						//DISCOUNT RATE
+						if(mySodOrder.getDiscountRate() > 0.0)
+						{
+							//IF THERE 'WAS' A DISCOUNT
+							//RATE USED, DISPLAY THE ITEM
+							//RECEIPT THAT DISPLAYS THE
+							//DISCOUNT INFORMATION
+							//CALL displayItemReceipt()
+							//VOID METHOD
+							displayItemReceipt(userName,
+									mySodOrder.getItemName(),
+									mySodOrder.getItemPrice(),
+									mySodOrder.getHowMany(),
+									mySodOrder.getDiscountName(),
+									mySodOrder.getDiscountRate(),
+									mySodOrder.getDiscountAmt(),
+									mySodOrder.getDiscountPrice(),
+									mySodOrder.getSubTotal(),
+									mySodOrder.getTaxRate(),
+									mySodOrder.getTaxAmt(),
+									mySodOrder.getTotalCost(),
+									mySodOrder.getPrizeName());
+						} //END if(discountRate > 0.0)
+						else
+						{
+							//IF THERE WAS NO DISCOUNT RATE
+							//USED, DISPLAY THE ITEM
+							//RECEIPT THAT DOES NOT DISPLAY
+							//DISCOUNT INFORMATION
+							//CALL displayItemReceipt()
+							//VOID METHOD
+							displayItemReceipt(userName,
+									mySodOrder.getItemName(),
+									mySodOrder.getItemPrice(),
+									mySodOrder.getHowMany(),
+									mySodOrder.getSubTotal(),
+									mySodOrder.getTaxRate(),
+									mySodOrder.getTaxAmt(),
+									mySodOrder.getTotalCost(),
+									mySodOrder.getPrizeName());
+						} //END (ELSE) if(discountRate > 0.0)
+					} //END (ELSE) if(inStockCounts < howMany)
+				} //END (ELSE) if(currentInventory.getSearchIndex() < 0)
+			} //END (ELSE) if(menuSelection == 'A')
+			
+			//SET THE LOCAL VARIABLE menuSelection EQUAL TO
+			//THE INPUT GIVEN IN THE VR METHOD
+			//validateMainMenuSelection()
+			//UPDATED READ FOR menuSelection
+			//MODIFIED LCV
+			menuSelection = validateMainMenuSelection(input);
+		} //END RUN-WHILE !Q LOOP
+		
+		//USE AN IF STATEMENT TO DETERMINE IF THE USER'S
+		//TOTAL COST IS GREATER THAN ZERO
+		if(mySodOrder.getTotalCost() > 0.0)
+		{
+			//IF THE USER'S TOTAL COST IS GREATER THAN ZERO
+			
+			//LOAD ALL OF THE RECORDS FROM THE FILE THAT
+			//THE USER CHOSE
+			currentInventory.setLoadItems(sodOrders.getFileName(),
+					currentInventory.getRecordCount());
+			
+			//CALL displayFinalReport() TO DISPLAY THE
+			//FINAL REPORT TO THE USER
+			displayFinalReport(currentInventory.getItemIDs(),
+					currentInventory.getItemNames(),
+					currentInventory.getItemPrices(),
+					currentInventory.getOrderQuantities(),
+					currentInventory.getOrderTotals(),
+					currentInventory.getRecordCount(),
+					currentInventory.getDiscountNames(),
+					mySodOrder.getDiscountCounts(),
+					currentInventory.getPrizeNames(),
+					mySodOrder.getPrizeCounts());
+		} //END if(totalCost > 0.0)
+		
+		//IF THE USER'S TOTAL COST WAS 'NOT' GREATER THAN
+		//ZERO, AUTOMATICALLY DISPLAY THE FAREWELL MESSAGE
+		//BY CALLING THE VOID METHOD
+		//displayFarewellMessage()
+		displayFarewellMessage(userName);
+		
+		//CLOSE SCANNER
+		input.close();
+	} //END main(String[] args) VOID METHOD
+	
+	//START displayWelcomeBanner() VOID METHOD
+	public static void displayWelcomeBanner()
+	{
+		System.out.println("Hello and Welcome to SodNotZod!");
+		System.out.println("To get started, please choose 'Load");
+		System.out.println("Inventory' from the MAIN MENU to");
+		System.out.println("select the file that you wish to open.");
+		System.out.println("Then, choose 'Create Order' from the");
+		System.out.println("MAIN MENU to enter an item Search ID");
+		System.out.println("and to start creating your order! After");
+		System.out.println("you are done with that, we will do the rest!");
+		System.out.println("\nHAPPY 'SODDING'!");
+	} //END displayWelcomeBanner() VOID METHOD
+	
+	//START getUsername() VR METHOD
+	public static String getUserName(Scanner borrowedInput)
+	{
+		//PROMPT THE USER TO ENTER THEIR FIRST NAME
+		System.out.println("\nTo get started, please enter your first name here: ");
+		
+		//COLLECT USER INPUT
+		return borrowedInput.next();
+	} //END getUserName() VR METHOD
+	
+	//START displayMainMenu() VOID METHOD
+	public static void displayMainMenu()
+	{
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~MAIN MENU~~");
+		System.out.printf("%-6s%5s\n", "[A]", MENU_OPTIONS[0]);
+		System.out.printf("%-6s%5s\n", "[B]", MENU_OPTIONS[1]);
+		System.out.printf("%-6s%4s\n", "[Q]", MENU_OPTIONS[2]);
+		System.out.print("\nPlease enter your Main Menu selection here: ");
+	} //END displayMainMenu() VOID METHOD
+	
+	//START validateMainMenuSelection() VR METHOD
+	public static char validateMainMenuSelection(Scanner borrowedInput)
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLE
+		char localMenuSelection = ' ';
+		
+		//CALL displayMainMenu() TO DISPLAY THE MAIN MENU
+		//TO THE USER
+		displayMainMenu();
+		
+		//COLLECT USER INPUT
+		//PRIME READ FOR localMenuSelection
+		localMenuSelection = borrowedInput.next().toUpperCase().charAt(0);
+		
+		//USE A RUN-WHILE LOOP TO VALIDATE THE USER'S INPUT
+		while (localMenuSelection != 'A' && localMenuSelection != 'B'
+				&& localMenuSelection != 'Q')
+		{
+			//PROMPT THE USER TO ENTER A VALID SELECTION
+			System.out.println("\nThe selection you have entered is invalid.");
+			System.out.println("Please try again.");
+			
+			//CALL displayMainMenu() VOID METHOD TO DISPLAY
+			//THE MAIN MENU TO THE USER AGAIN
+			displayMainMenu();
+			
+			//COLLECT USER INPUT AGAIN
+			//UPDATED READ FOR localMenuSelection
+			localMenuSelection = borrowedInput.next().toUpperCase().charAt(0);
+		} //END RUN-WHILE VALIDATION LOOP
+		
+		//RETURN USER INPUT
+		return localMenuSelection;
+	} //END validateMainMenuSelection() VR METHOD
+	
+	//START getFileName() VR METHOD
+	public static String getFileName(Scanner borrowedInput)
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLE
+		String localFileName = "";
+		
+		//PROMPT THE USER TO ENTER THE FILE NAME THAT THEY
+		//WISH TO OPEN
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~LOAD INVENTORY~~");
+		System.out.print("\nPlease enter the name of the file you wish to open here: ");
+		
+		//COLLECT USER INPUT
+		//PRIME READ FOR localFileName
+		localFileName = borrowedInput.next();
+		
+		//RETURN USER INPUT
+		return localFileName;
+	} //END getFileName() VR METHOD
+	
+	//START displayNotOpen() VOID METHOD
+	public static void displayNotOpen()
+	{
+		System.out.println("\n~~ERROR~~");
+		System.out.println("~~FILE NOT FOUND~~");
+		System.out.println("\nPlease check the File Name and try again.");
+	} //END displayNotOpen() VOID METHOD
+	
+	//START validateSearchValue() VR METHOD
+	public static int validateSearchValue(Scanner borrowedInput)
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLE
+		int localSearchID = 0;
+		
+		//PROMPT THE USER TO ENTER THE SEARCH ID OF THE
+		//ITEM THEY WISH TO FIND
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~SEARCH FOR ITEM~~");
+		System.out.println("\nPlease enter the Search ID of the item you wish");
+		System.out.print("to find here: ");
+		
+		//COLLECT USER INPUT
+		//PRIME READ FOR localSearchID
+		localSearchID = borrowedInput.nextInt();
+		
+		//USE A RUN-WHILE LOOP TO VALIDATE THE USER'S INPUT
+		while (localSearchID <= 0)
+		{
+			//PROMPT THE USER TO ENTER A VALID SELECTION
+			System.out.println("\nThe selection you have entered is invalid.");
+			System.out.println("Please enter only a number greater than zero.");
+			
+			//COLLECT USER INPUT AGAIN
+			//UPDATED READ FOR localSearchID
+			localSearchID = borrowedInput.nextInt();
+		} //END RUN-WHILE VALIDATION LOOP
+		
+		//RETURN USER INPUT
+		return localSearchID;
+	} //END validateSearchValue() VR METHOD
+	
+	//START displayNotFound() VOID METHOD
+	public static void displayNotFound()
+	{
+		System.out.println("\n~~ERROR~~");
+		System.out.println("~~ITEM NOT FOUND~~");
+		System.out.println("\nPlease check the Search ID and try again.");
+	} //END displayNotFound() VOID METHOD
+	
+	//START validateHowMany() VR METHOD
+	public static int validateHowMany(Scanner borrowedInput)
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLE
+		int localHowMany = 0;
+		
+		//PROMPT THE USER TO ENTER THE QUANTITY OF ITEMS
+		//THEY WISH TO PURCHASE
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~QUANTITY NEEDED~~");
+		System.out.println("\nPlease enter the quantity of items you wish to");
+		System.out.print("purchase today here: ");
+		
+		//COLLECT USER INPUT
+		//PRIME READ FOR localHowMany
+		localHowMany = borrowedInput.nextInt();
+		
+		//USE A RUN-WHILE LOOP TO VALIDATE THE USER'S INPUT
+		while (localHowMany <= 0)
+		{
+			//PROMPT THE USER TO ENTER A VALID SELECTION
+			System.out.println("\nThe selection you have entered is invalid.");
+			System.out.println("Please enter only a number greater than zero.");
+			
+			//COLLECT USER INPUT AGAIN
+			//UPDATED READ FOR localHowMany
+			localHowMany = borrowedInput.nextInt();
+		} //END RUN-WHILE VALIDATION LOOP
+		
+		//RETURN USER INPUT
+		return localHowMany;
+	} //END validateHowMany() VR METHOD
+	
+	//START displayOutOfStock() VOID METHOD
+	public static void displayOutOfStock()
+	{
+		System.out.println("\n~~ERROR~~");
+		System.out.println("~~NOT ENOUGH ITEMS IN STOCK~~");
+		System.out.println("\nThe quantity of items you have entered exceeds");
+		System.out.println("the amount of items in stock.");
+		System.out.println("\nWe're sorry for the inconvenience!");
+	} //END displayOutOfStock() VOID METHOD
+	
+	//START displayDiscountMenu() VOID METHOD
+	public static void displayDiscountMenu(String[] borrowedDiscountNames,
+			double[] borrowedDiscountRates)
+	{
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~DISCOUNT MENU~~");
+		System.out.printf("%-6s%5s%8s%8.2f\n", "(A)", borrowedDiscountNames[0], "%", borrowedDiscountRates[0]);
+		System.out.printf("%-6s%5s%8s%8.2f\n", "(B)", borrowedDiscountNames[1], "%", borrowedDiscountRates[1]);
+		System.out.printf("%-6s%5s%3s%8.2f\n", "(C)", borrowedDiscountNames[2], "%", borrowedDiscountRates[2]);
+		System.out.print("\nPlease enter your Discount Menu selection here: ");
+	} //END displayDiscountMenu() VOID METHOD
+	
+	//START validateDiscountMenuSelection() VR METHOD
+	public static char validateDiscountMenuSelection(Scanner borrowedInput,
+			final String[] borrowedGetDiscountName, final double[] borrowedGetDiscountRate)
+	{
+		//DECLARE/INITIALIZE LOCAL VARIABLE
+		char localMenuSelection = ' ';
+		
+		//CALL displayDiscountMenu() VOID METHOD TO
+		//DISPLAY THE DISCOUNT MENU TO THE USER
+		displayDiscountMenu(borrowedGetDiscountName, borrowedGetDiscountRate);
+		
+		//COLLECT USER INPUT
+		//PRIME READ FOR localMenuSelection
+		localMenuSelection = borrowedInput.next().toUpperCase().charAt(0);
+		
+		//USE A RUN-WHILE LOOP TO VALIDATE THE USER'S INPUT
+		while (localMenuSelection != 'A' && localMenuSelection != 'B'
+				&& localMenuSelection != 'C')
+		{
+			//PROMPT THE USER TO ENTER A VALID SELECTION
+			System.out.println("\nThe selection you have entered is invalid.");
+			System.out.println("Please try again.");
+			
+			//CALL displayDiscountMenu() VOID METHOD TO
+			//DISPLAY THE DISCOUNT MENU TO THE USER AGAIN
+			displayDiscountMenu(borrowedGetDiscountName, borrowedGetDiscountRate);
+			
+			//COLLECT USER INPUT AGAIN
+			//UPDATED READ FOR localMenuSelection
+			localMenuSelection = borrowedInput.next().toUpperCase().charAt(0);
+		} //END RUN-WHILE VALIDATION LOOP
+		
+		//RETURN USER INPUT
+		return localMenuSelection;
+	} //END validateDiscountMenuSelection() VR METHOD
+	
+	//START displayItemReceipt() VOID METHOD
+	//DISPLAYS ITEM RECEIPT FOR USERS THAT USED A DISOCUNT
+	public static void displayItemReceipt(String borrowedUserName,
+			String borrowedGetItemName, double borrowedGetItemPrice,
+			int borrowedGetHowMany, String borrowedGetDiscountName,
+			double borrowedGetDiscountRate, double borrowedGetDiscountAmt,
+			double borrowedGetDiscountPrice, double borrowedGetSubTotal,
+			double borrowedGetTaxRate, double borrowedGetTaxAmt,
+			double borrowedGetTotalCost, String borrowedGetPrizeName)
+	{
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~ITEM RECEIPT~~");
+		System.out.println("\nThank you for shopping with us today, " + borrowedUserName + "!\n");
+		System.out.printf("%-21s%-10s\n", "Item Purchased: ", borrowedGetItemName);
+		System.out.printf("%-25s%-2s%4.2f\n", "Item Price: ", "$", borrowedGetItemPrice);
+		System.out.printf("%-5s%8d\n", "Quantity Purchased: ", borrowedGetHowMany);
+		System.out.printf("%-21s%-15s\n", "Discount Used: ", borrowedGetDiscountName);
+		System.out.printf("%-5s%16.2f%2s\n", "Discount Rate: ", borrowedGetDiscountRate, "%");
+		System.out.printf("%-25s%-2s%4.2f\n", "Discount Amount: ", "$", borrowedGetDiscountAmt);
+		System.out.printf("%-25s%-2s%4.2f\n", "Discounted Price: ", "$", borrowedGetDiscountPrice);
+		System.out.printf("%-25s%-2s%4.2f\n", "Sub Total: ", "$", borrowedGetSubTotal);
+		System.out.printf("%-5s%22.3f%2s\n", "Tax Rate: ", borrowedGetTaxRate, "%");
+		System.out.printf("%-25s%-2s%4.2f\n", "Tax Amount: ", "$", borrowedGetTaxAmt);
+		System.out.printf("%-25s%-2s%4.2f\n", "Total Cost: ", "$", borrowedGetTotalCost);
+		System.out.println("\nCongratulations! You have won a " + borrowedGetPrizeName + "!");
+	} //END displayItemReceipt() VOID METHOD
+	
+	//START displayItemReceipt() VOID METHOD
+	//DISPLAYS ITEM RECEIPT FOR USERS THAT DID 'NOT' USE A
+	//DISCOUNT
+	public static void displayItemReceipt(String borrowedUserName,
+			String borrowedGetItemName, double borrowedGetItemPrice,
+			int borrowedGetHowMany, double borrowedGetSubTotal,
+			double borrowedGetTaxRate, double borrowedGetTaxAmt,
+			double borrowedGetTotalCost, String borrowedGetPrizeName)
+	{
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~ITEM RECEIPT~~");
+		System.out.println("\nThank you for shopping with us today, " + borrowedUserName + "!\n");
+		System.out.printf("%-21s%-10s\n", "Item Purchased: ", borrowedGetItemName);
+		System.out.printf("%-25s%-2s%4.2f\n", "Item Price: ", "$", borrowedGetItemPrice);
+		System.out.printf("%-5s%8d\n", "Quantity Purchased: ", borrowedGetHowMany);
+		System.out.printf("%-25s%-2s%4.2f\n", "Sub Total: ", "$", borrowedGetSubTotal);
+		System.out.printf("%-5s%22.3f%2s\n", "Tax Rate: ", borrowedGetTaxRate, "%");
+		System.out.printf("%-25s%-2s%4.2f\n", "Tax Amount: ", "$", borrowedGetTaxAmt);
+		System.out.printf("%-25s%-2s%4.2f\n", "Total Cost: ", "$", borrowedGetTotalCost);
+		System.out.println("\nCongratulations! You have won a " + borrowedGetPrizeName + "!");
+	} //END displayItemReceipt() VOID METHOD
+	
+	//START displayFinalReport() VOID METHOD
+	public static void displayFinalReport(int[] borrowedGetItemIDs,
+			String[] borrowedGetItemNames, double[] borrowedGetItemPrices,
+			int[] borrowedGetOrderQuantities, double[] borrowedGetOrderTotals,
+			int borrowedGetRecordCount, String[] borrowedGetDiscountNames,
+			int[] borrowedGetDiscountCounts, String[] borrowedGetPrizeNames,
+			int[] borrowedGetPrizeCounts)
+	{
+		//DECLARE/INITIALIZE LOCAL INDEX
+		int localIndex = 0;
+		
+		System.out.println("\n*********************************************");
+		System.out.println("\n~~FINAL REPORT~~");
+		
+		//USE A RUN-WHILE LOOP TO DISPLAY THE ITEM NAMES
+		while (localIndex < borrowedGetItemIDs.length && borrowedGetItemIDs[localIndex] != 0)
+		{
+			System.out.println("\nAll Written Orders:\n");
+			System.out.printf("%-6s%11d\n", "Item ID: ", borrowedGetItemIDs[localIndex]);
+			System.out.printf("%-8s%4s\n", "Item Purchased: ", borrowedGetItemNames[localIndex]);
+			System.out.printf("%-15s%-2s%4.2f\n", "Item Price: ", "$", borrowedGetItemPrices[localIndex]);
+			System.out.printf("%-6s%2d\n", "Order Quantity: ", borrowedGetOrderQuantities[localIndex]);
+			System.out.printf("%-15s%-2s%4.2f\n", "Order Total: ", "$", borrowedGetOrderTotals[localIndex]);
+			
+			//INCREMENT localIndex
+			localIndex++;
+		} //END RUN-WHILE LOOP
+		
+		//DISPLAY THE recordCount
+		System.out.println("\nRecords Found: " + borrowedGetRecordCount);
+		
+		//DISPLAY DISCOUNT_NAMES AND discountCounts
+		System.out.println("\nNumber of times each discount was used:");
+		System.out.printf("%-6s%-2s%10d\n", borrowedGetDiscountNames[0], ": ", borrowedGetDiscountCounts[0]);
+		System.out.printf("%-6s%-2s%10d\n", borrowedGetDiscountNames[1], ": ", borrowedGetDiscountCounts[1]);
+		System.out.printf("%-6s%-2s%5d\n", borrowedGetDiscountNames[2], ": ", borrowedGetDiscountCounts[2]);
+		
+		//DISPLAY PRIZE_NAMES AND prizeCounts
+		System.out.println("\nNumber of times each prize was won:");
+		System.out.printf("%-6s%-2s%10d\n", borrowedGetPrizeNames[0], ": ", borrowedGetPrizeCounts[0]);
+		System.out.printf("%-6s%-2s%3d\n", borrowedGetPrizeNames[1], ": ", borrowedGetPrizeCounts[1]);
+		System.out.printf("%-6s%-2s%1d\n", borrowedGetPrizeNames[2], ": ", borrowedGetPrizeCounts[2]);
+	} //END displayFinalReport() VOID METHOD
+	
+	//START displayFarewellMessage() VOID METHOD
+	public static void displayFarewellMessage(String borrowedUserName)
+	{
+		System.out.println("\n*********************************************");
+		System.out.println("\nThank you for using SodNotZod, " + borrowedUserName + "!");
+		System.out.println("We hope that you were able to find everything you needed!");
+		System.out.println("\nHAVE A GREAT DAY AND 'HAPPY SODDING'!!");
+	} //END displayFarewellMessage() VOID METHOD
+} //END OF MainClass CLASS
